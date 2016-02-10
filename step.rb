@@ -2,57 +2,93 @@ require 'net/http'
 require 'net/https'
 require 'json/ext'
 
-url = ENV["STEP_GITHUB_STATUS_REPOSITORY_URL"]
+def sendPutRequest(url, body=nil)
+  uri = URI.parse(url)
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  http.ssl_version = :TLSv1
+  http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+  req = Net::HTTP::Put.new(uri.path)
+  req['Authorization'] = "token #{@authorization_token}"
+  req.body = body unless body.nil?
+
+  http.request(req)
+end
+
+def sendGetRequest(url)
+  uri = URI.parse(url)
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  http.ssl_version = :TLSv1
+  http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+  req = Net::HTTP::Get.new(uri.path)
+  req['Authorization'] = "token #{@authorization_token}"
+
+  http.request(req)
+end
+
+url = ENV["repository_url"]
 if url.to_s.eql? ''
-	puts "No repository url specified"
-	exit 1
+  puts "No repository url specified :>#{url}<"
+  exit 1
 end
 
 unless (/([A-Za-z0-9]+@|http(|s)\:\/\/)(github.com)(:|\/)(?<user>[A-Za-z0-9]+)\/(?<repo>[^.]+)(\.git)?/ =~ url) == 0
-	puts "#{url} is not a GitHub repository"
-	exit 1
+  puts "#{url} is not a GitHub repository"
+  exit 1
 end
 
 build_is_green = ENV["STEPLIB_BUILD_STATUS"] == "0"
-commit_hash = ENV["STEP_GITHUB_STATUS_COMMIT_HASH"]
-authorization_token = ENV["STEP_GITHUB_STATUS_AUTH_TOKEN"]
-ci_build_url = ENV["STEP_GITHUB_STATUS_BUILD_URL"]
+commit_hash = ENV["commit_hash"]
+@authorization_token = ENV["auth_token"]
+pull_id = ENV["pull_id"]
 
 if commit_hash.to_s.eql? ''
-	puts "No commit hash specified"
-	exit 1
+  puts "No commit hash specified"
+  exit 1
 end
 
-if authorization_token.to_s.eql? ''
-	puts "No authorization_token specified"
-	exit 1
+if @authorization_token.to_s.eql? ''
+  puts "No authorization_token specified"
+  exit 1
 end
 
-if ci_build_url.to_s.eql? ''
-	puts "No build url specified"
-	exit 1
+if pull_id.to_s.eql? ''
+  puts "No build url specified"
+  exit 1
 end
 
-uri = URI.parse("https://api.github.com/repos/#{user}/#{repo}/statuses/#{commit_hash}")
-http = Net::HTTP.new(uri.host, uri.port)
 
-http.use_ssl = true
-http.ssl_version = :TLSv1
-http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+#lecture pull/number
+url = "https://api.github.com/repos/#{user}/#{repo}/pulls/#{pull_id}"
+response = sendGetRequest url
+data = JSON.parse response.body
+statuses_url=data["statuses_url"]
+puts data["mergeable_state"]
 
-req = Net::HTTP::Post.new(uri.path)
-req['Authorization'] = "token #{authorization_token}"
-req.body = {
-  state: (build_is_green ? "success" : "failure"),
-  target_url: ci_build_url,
-  description: (build_is_green ? "The build succeeded" : "The build failed. Check the logs on Bitrise"),
-  context: "continuous-integration/bitrise"
-}.to_json
-response = http.request(req)
+#lecture statuses
+#if state == success
+#  merge
+#end
 
-if response.code.eql?('201')
-	puts "Updated status for commit #{commit_hash}"
+
+
+url = statuses_url
+response = sendGetRequest url
+data = JSON.parse response.body
+puts data
+if "success" == data[0]['state']
+  commit_hash = statuses_url.split('/').last
+  url= "https://api.github.com/repos/#{user}/#{repo}/pulls/#{pull_id}/merge"
+  body = {
+    commit_message:"merged by BBM",
+    sha: commit_hash
+  }.to_json
+  puts url +" " + body
+  response = sendPutRequest url, body
+  exit (response.code.eql?('200') ? 0 : 1)
 else
-	puts "Failed to update commit status"
+  exit 1
 end
-exit (response.code.eql?('201') ? 0 : 1)

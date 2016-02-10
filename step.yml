@@ -13,49 +13,42 @@ type_tags:
   - "github"
   - "status"
 is_requires_admin_user: false
-is_always_run: true
+is_always_run: false
+is_skippable: false
 inputs:
-  - 
-    mapped_to: STEP_GITHUB_STATUS_REPOSITORY_URL
-    title: "Repository URL"
-    description: |
-      The URL for the repository we are working with
-    is_required: true
-    is_expand: true
-    value: ""
-    value_options: []
-    is_dont_change_value: false
-  - 
-    mapped_to: STEP_GITHUB_STATUS_COMMIT_HASH
-    title: "Commit hash"
-    description: |
-      The commit hash for the commit we are working with
-    is_required: true
-    is_expand: true
-    value: ""
-    value_options: []
-    is_dont_change_value: false
-  - 
-    mapped_to: STEP_GITHUB_STATUS_BUILD_URL
-    title: "Build URL"
-    description: |
-      Build URL with detailed information for the build
-    is_required: true
-    is_expand: true
-    value: ""
-    value_options: []
-    is_dont_change_value: false
-  - 
-    mapped_to: STEP_GITHUB_STATUS_AUTH_TOKEN
-    title: "GitHub auth token"
-    description: |
-      Authorization token for GitHub applications
+  - repository_url: $GIT_REPOSITORY_URL
+    opts:
+      title: "Repository URL"
+      description: |
+        The URL for the repository we are working with
+      is_required: true
+      is_expand: true
+      is_dont_change_value: true
+  - commit_hash: $BITRISE_GIT_COMMIT
+    opts:
+      title: "Commit hash"
+      description: |
+        The commit hash for the commit we are working with
+      is_required: true
+      is_expand: true
+      is_dont_change_value: true
+  - pull_id: $BITRISE_PULL_REQUEST
+    opts:
+      title: "Build URL"
+      description: |
+        Build URL with detailed information for the build
+      is_required: true
+      is_expand: true
+      is_dont_change_value: true
+  - auth_token: $STEP_GITHUB_STATUS_AUTH_TOKEN
+    opts:
+      title: "GitHub auth token"
+      description: |
+        Authorization token for GitHub applications
 
-      You can create one for yourself at the following url:
-      [https://github.com/settings/applications#personal-access-tokens](https://github.com/settings/applications#personal-access-tokens)
-    is_required: true
-    is_expand: false
-    value: ""
-    value_options: []
-    is_dont_change_value: false
+        You can create one for yourself at the following url:
+        [https://github.com/settings/applications#personal-access-tokens](https://github.com/settings/applications#personal-access-tokens)
+      is_required: true
+      is_expand: false
+      is_dont_change_value: true
 outputs: []
