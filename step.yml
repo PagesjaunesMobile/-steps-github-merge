@@ -49,6 +49,6 @@ inputs:
         You can create one for yourself at the following url:
         [https://github.com/settings/applications#personal-access-tokens](https://github.com/settings/applications#personal-access-tokens)
       is_required: true
-      is_expand: false
+      is_expand: true
       is_dont_change_value: true
 outputs: []
