@@ -74,12 +74,6 @@ puts data["mergeable_state"]
 #end
 
 
-
-url = statuses_url
-response = sendGetRequest url
-data = JSON.parse response.body
-puts data
-if "success" == data[0]['state']
   commit_hash = statuses_url.split('/').last
   url= "https://api.github.com/repos/#{user}/#{repo}/pulls/#{pull_id}/merge"
   body = {
@@ -89,6 +83,4 @@ if "success" == data[0]['state']
   puts url +" " + body
   response = sendPutRequest url, body
   exit (response.code.eql?('200') ? 0 : 1)
-else
-  exit 1
-end
+
