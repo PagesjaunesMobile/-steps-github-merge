@@ -40,7 +40,7 @@ inputs:
       is_required: true
       is_expand: true
       is_dont_change_value: true
-  - auth_token: $STEP_GITHUB_STATUS_AUTH_TOKEN
+  - auth_token: $auth_token
     opts:
       title: "GitHub auth token"
       description: |

@@ -33,7 +33,7 @@ workflows:
         - repository_url: https://github.com/pagesjaunes/sample_repo
         - commit_hash: c956f923fbd3365ed66ecb7a1a7facd628eaa42b
         - pull_id: 1
-        - auth_token: $STEP_GITHUB_STATUS_AUTH_TOKEN
+        - auth_token: $auth_token
         - notify_user_groups: none
         - notify_email_list:
         - is_enable_public_page: "yes"
